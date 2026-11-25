@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+
+# Data and outputs
+data/
+results/
+results_v2/
+*.nc
+*.nc4
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this code or the associated dataset, please cite the manuscript below."
+title: "Hourly Reconstruction of Historical Wind Power Generation for China's Cities"
+abstract: "Code for reconstructing hourly, city-level wind power generation for mainland China (1989-2023) from ERA5, CDMet, a wind-farm inventory and official statistics."
+authors:
+  - family-names: "Chen"
+    given-names: "Hongyu"
+  - family-names: "Zhao"
+    given-names: "Su"
+version: "1.0.0"
+date-released: "2026-11-25"
+license: MIT
+repository-code: "https://github.com/zhaosu99/china-city-wind-generation"
+keywords:
+  - wind power
+  - China
+  - hourly generation
+  - reanalysis
+  - city-level
