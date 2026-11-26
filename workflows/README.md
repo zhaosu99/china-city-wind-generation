@@ -73,6 +73,17 @@ python drivers/build_final_city.py \
 `parameters/pre2012_official.csv`.  On Slurm, the same stage is
 `workflows/run_finalize.slurm`.
 
+## Validation and Figures 11–15
+
+After the production run, the §4.4 validation and Figures 11–15 are
+reproduced with:
+
+```bash
+bash workflows/run_validation.sh
+```
+
+The validation inputs are documented in `validation/README.md`.
+
 The steps 1–3 outputs (`farm_raw_w`, `farm_power_curves` and the
 inventory/ERA5/CDMet inputs) must exist before `run_full.slurm` is
 submitted.  For 2024–2025, generate the 2024–25 raw wind series and set

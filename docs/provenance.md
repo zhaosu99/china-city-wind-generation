@@ -96,6 +96,9 @@ provenance.
 | Production `(K,B)` fit | `drivers/fit_generation_calibration.py` |
 | Calibrated generation (intermediate; stage 9) | `pipeline/panel.py --steps 9` |
 | Final 1989–2023 city dataset | `drivers/build_final_city.py` |
+| §4.4 out-of-sample validation | `validation/compute_validation.py` |
+| Validation figures 11–15 | `validation/make_fig11_12.py`, `validation/make_fig13_14.py`, `validation/make_fig15.py` |
+| Final figure code Figures 1–15 | `figures/` |
 | Final correction job | `workflows/run_finalize.slurm` |
 | 2024–2025 calibrated generation | `workflows/run_2425.slurm` |
 | Wind-calibrated production job | `workflows/run_full.slurm` |

@@ -11,6 +11,8 @@ the M4 wind-only selection in `pipeline/m4_selection.py`.
 | `refit_and_cv_2013_2023.py` | old 2013–2023 refit/CV script with hard-coded local paths |
 | `refit_constrained_2013_2023.py` | old constrained `(K,B)` fit with hard-coded local paths |
 | `patch_cv_constraint_2013_2023.py` | helper that patched the old refit script; obsolete |
+| `fig04_m2_province_optimal_kb.py` | old Figure 4 script using the M2 generation path |
+| `figures_lib_find_optimal_kb_m2.py` | old figures/_lib M2 helper |
 
-These scripts are not imported by `pipeline/panel.py`, `pipeline/m4_selection.py`
-or `drivers/cv_m4.py`.  Do not cite them as the final method.
+These scripts are not imported by `pipeline/panel.py`, `pipeline/m4_selection.py`,
+`drivers/cv_m4.py` or `validation/`.  Do not cite them as the final method.

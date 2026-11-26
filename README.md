@@ -66,10 +66,10 @@ drivers/cv_base.py
 ```text
 pipeline/       core reconstruction modules and the M4 selector
 drivers/        CV, production generation fit and city-level drivers
-workflows/      calibration shell/Slurm entry points and production jobs
+validation/     §4.4 out-of-sample validation and Figures 11-15 code
+figures/        final figure-rendering scripts (Figures 1-15)
+workflows/      calibration, validation and production entry points
 parameters/     final M4 parameter tables
-figures/        figure-rendering scripts (some require a local
-                figures/_lib/config_paths.py; not part of calibration)
 tests/          unit tests for the M4 selector, CV grid and fit
 legacy/         old M2 scripts, kept only for audit; not on the final path
 docs/           provenance and code map
@@ -112,6 +112,19 @@ python drivers/build_final_city.py
 ```
 
 The 2024–2025 application is `workflows/run_2425.slurm`.
+
+## Validation and figures
+
+The §4.4 out-of-sample validation (2013–2023, 2024, 2025) and the
+Figures 11–15 code are in `validation/`; the complete final figure code
+for Figures 1–15 is under `figures/`.  Run the validation/figures with:
+
+```bash
+bash workflows/run_validation.sh
+```
+
+Inputs and output locations are in `validation/README.md` and
+`figures/README.md`.
 
 ## Final parameter provenance
 
