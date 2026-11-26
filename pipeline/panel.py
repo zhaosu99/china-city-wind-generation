@@ -17,7 +17,6 @@ from find_optimal_kb_full_data import find_optimal_kb_full_data
 from farm_aggr_with_kb import farm_aggr_with_kb
 from final_gen import final_gen
 from no_kb_gen import no_kb_gen
-from kb_validation import kb_validation
 
 # 路径集中到 config.py（可用 WINDPAPER_ROOT / WINDPAPER_DATA / WINDPAPER_RESULTS /
 # WINDPAPER_CURVE_DIR / WINDPAPER_ERA5_DIR / WINDPAPER_CDMET_DIR 覆盖）
@@ -107,9 +106,6 @@ final_gen_output_dir = results_root_dir / "final_gen"
 # no_kb_gen 关键调度参数
 no_kb_gen_output_dir = results_root_dir / "no_kb_gen"
 
-# kb_validation 关键调度参数
-kb_validation_input_dir = prov_gen_enums_output_dir
-kb_validation_output_dir = results_root_dir / "kb_validation"
 
 
 STEP_ARG_NAME_MAP = {
@@ -124,7 +120,6 @@ STEP_ARG_NAME_MAP = {
     9: "run_step_9_calibrated_gen",
     10: "run_step_10_final_gen",
     11: "run_step_11_no_kb_gen",
-    12: "run_step_12_kb_validation",
 }
 
 STEP_LABEL_MAP = {
@@ -139,7 +134,6 @@ STEP_LABEL_MAP = {
     9: "calibrated_gen",
     10: "final_gen",
     11: "no_kb_gen",
-    12: "kb_validation",
 }
 
 STEP_DEFAULT_ENABLED = {
@@ -154,7 +148,6 @@ STEP_DEFAULT_ENABLED = {
     "run_step_9_calibrated_gen": True,
     "run_step_10_final_gen": True,
     "run_step_11_no_kb_gen": True,
-    "run_step_12_kb_validation": False,
 }
 
 
@@ -427,7 +420,6 @@ STEP_PARALLEL_STRUCTURE: dict[int, str] = {
     9: "two_layer",      # farm_aggr_with_kb(outer_max_workers, inner_max_workers)
     10: "none",          # final_gen：无进程池
     11: "single_layer",  # no_kb_gen(max_workers=...) → aggr_farm_output(max_workers)
-    12: "single_layer",  # kb_validation(max_workers=...)；其内层固定 max_workers=1
 }
 
 
@@ -713,7 +705,6 @@ def run_panel_pipeline(
     run_step_9_calibrated_gen=True,
     run_step_10_final_gen=True,
     run_step_11_no_kb_gen=True,
-    run_step_12_kb_validation=False,
     strict_failures: bool = False,
     kb_grid: dict | None = None,
 ):
@@ -964,32 +955,6 @@ def run_panel_pipeline(
         verbose=False,
         show_progress=False,
         output_spec={"dir": no_kb_gen_output_dir, "pattern": "**/*.nc", "min_files": 1},
-    )
-
-    _step(
-        12,
-        run_step_12_kb_validation,
-        "step_12_kb_validation",
-        kb_validation,
-        prov_gen_enums_dir=kb_validation_input_dir,
-        wind_dir=optimal_kb_wind_dir,
-        optimal_kb_csv=optimal_kb_csv,
-        output_dir=kb_validation_output_dir,
-        era5_dir=era5_dir,
-        cdmet_dir=cdmet_dir,
-        inventory_csv_path=farm_inventory_csv_path,
-        farm_power_curve_dir=farm_power_curve_dir,
-        farm_adjusted_w_dir=kb_farm_adjusted_w_dir,
-        farm_adjusted_w_varname=batch_farm_adjusted_w_varname,
-        city_capacity_adjust_csv_path=city_capacity_adjust_csv_path,
-        prov_utility_rate_adjust_csv_path=prov_utility_rate_adjust_csv_path,
-        n_splits=5,
-        n_repeats=10,
-        random_seed=42,
-        poly_degree=9,
-        horizon_interp_method="loess",
-        max_workers=max_workers,
-        overwrite=False,
     )
 
     # 逐步失败摘要 + 门禁：任一 step failure_count>0 ⇒ 严格模式下显式失败（防静默缺件）

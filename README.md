@@ -1,94 +1,136 @@
-# China city-level hourly wind power generation reconstruction (1989-2023)
+# China city-level hourly wind power generation reconstruction (1989–2023)
 
-Code repository accompanying the manuscript **"Hourly Reconstruction of Historical Wind Power Generation for China's Cities"**.
+Code accompanying the manuscript **“Hourly Reconstruction of Historical
+Wind Power Generation for China's Cities”**.
 
-The pipeline reconstructs hourly, city-level wind power generation for mainland China from 1989 to 2023 by combining ERA5 reanalysis, the CDMet gridded meteorological dataset, a wind-farm inventory with turbine specifications, and official capacity and generation statistics. The reconstruction has two calibration stages: (i) a province- and season-specific affine calibration of hub-height wind speed against a CDMet-constrained benchmark (2013-2020), and (ii) a generation-level affine calibration against official national annual totals (2005-2012) and provincial monthly totals (2013-2023).
+The reconstruction produces hourly, city-level wind generation for
+mainland China (1989–2023) from ERA5, the CDMet gridded meteorological
+data, a wind-farm inventory, monthly city capacity records and official
+provincial generation statistics.
 
-## Reconstruction at a glance
+## Calibration: final M4 method
 
-- 304 cities, 31 provincial-level units (32 statistical units after splitting Inner Mongolia into west and east)
-- 1989-2023, hourly resolution, onshore and offshore wind
-- 2023 national generation: 755.26 TWh
-- Calibration parameters: 30 calibration units with official monthly generation statistics
+The final calibration has two separate stages.
 
-## Repository structure
+### 1. Wind-speed calibration (M4, wind-only)
 
+For each province and season, a smooth wind-speed SMAPE surface
+`W(k,b)` is built against the CDMet-constrained benchmark.  The
+one-dimensional valley `b*(k) = argmin_b W(k,b)` is followed and the
+point with the minimum **wind-speed** SMAPE is selected.
+
+**Generation data are not used to select `(k,b)`.**  The earlier M2
+selection, which used the generation-error surface to define the
+candidate path, is retained only under `legacy/` for transparency.
+
+Implementation:
+
+```text
+pipeline/m4_selection.py
+pipeline/find_optimal_kb_full_data.py   # compatibility re-export
 ```
-pipeline/      Core reconstruction modules (wind interpolation, density correction,
-               power curves, farm/city aggregation, calibration, validation)
-drivers/       Driver and post-processing scripts (city series, 2B scaling,
-               constrained refit, cross-validation, number checks)
-figures/       Scripts used to produce the figures in the manuscript
-parameters/    Calibration parameter tables reported in the appendix
+
+Final table: `parameters/optimal_kb_M4.csv` (120 rows = 30 calibration
+units × 4 seasons).
+
+### 2. Generation-level calibration (2B)
+
+For each province, `G_corr = K G + B` is fitted to official
+province-month generation over 2013–2023.  The intercept is constrained
+to be non-negative.  The pre-2013 and 2005–2012 branches are described
+in the manuscript.
+
+Implementation:
+
+```text
+drivers/fit_generation_calibration.py
 ```
 
-## Installation
+Final table: `parameters/gen_correction_M4prod_final.csv`.
+
+### Cross-validation
+
+The CV uses the final 143-period grid (2013–2025; January–February
+merged) and 50 seasonal 80/20 splits.  The M4 selection is fixed before
+each split; `(K,B)` is re-fitted on each training fold.
+
+```text
+drivers/cv_m4.py
+drivers/cv_base.py
+```
+
+## Repository layout
+
+```text
+pipeline/       core reconstruction modules and the M4 selector
+drivers/        CV, production generation fit and city-level drivers
+workflows/      calibration shell/Slurm entry points and production jobs
+parameters/     final M4 parameter tables
+figures/        figure-rendering scripts
+tests/          unit tests for the M4 selector, CV grid and fit
+legacy/         old M2 scripts, kept only for audit; not on the final path
+docs/           provenance and code map
+```
+
+## Reproducing the calibration
+
+The expected input layout and commands are in
+[`workflows/README.md`](workflows/README.md).  In short:
 
 ```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
+export WINDPAPER_ROOT="$PWD"
+bash workflows/run_calibration.sh
 ```
 
-The code was developed with Python 3.10+ and tested on Windows and Linux. `geopandas`, `netCDF4` and `xarray` require their usual system dependencies (GDAL/GEOS/PROJ, HDF5, netCDF).
+The important checks are:
 
-## Input data
+1. `pipeline/m4_selection.py` reads only the wind-error surface and the
+   wind-valley path; generation CSVs are used only to enumerate
+   province/season pairs.
+2. `drivers/cv_m4.py` uses 2013–2025 and 50 seasonal splits.
+3. `drivers/fit_generation_calibration.py` uses the production
+   2013–2023 fit and enforces `B >= 0`.
 
-The repository does **not** redistribute input data. The pipeline expects the following inputs (paths are configured through environment variables, see `pipeline/config.py`):
+## Production
 
-- ERA5 hourly 10 m and 100 m wind, 2 m temperature and dew point, surface pressure and geopotential
-- CDMet daily gridded 10 m wind (used as the independent wind-speed benchmark)
-- Wind-farm inventory: coordinates, commissioning year, capacity, turbine model
-- City-level monthly cumulative installed capacity
-- Provincial monthly wind generation and national annual generation statistics
-- Provincial annual wind curtailment rates
+The final production stage is `pipeline/panel.py --steps 9`, using the
+precomputed `optimal_kb.csv`:
 
-Data sources and processing are described in the manuscript and its appendices. The reconstructed dataset is archived separately (Zenodo DOI to be added here upon publication).
-
-## Configuration
-
-`pipeline/config.py` reads six environment variables and falls back to cluster defaults:
-
-```
-WINDPAPER_ROOT        project root
-WINDPAPER_DATA        input data root
-WINDPAPER_RESULTS     output root
-WINDPAPER_CURVE_DIR   power-curve directory
-WINDPAPER_ERA5_DIR    ERA5 input directory
-WINDPAPER_CDMET_DIR   CDMet input directory (optional)
+```bash
+sbatch workflows/run_full.slurm
 ```
 
-For a local run, set `WINDPAPER_DATA`, `WINDPAPER_RESULTS`, `WINDPAPER_CURVE_DIR`, `WINDPAPER_ERA5_DIR` and (optionally) `WINDPAPER_CDMET_DIR`. See `config.example.env`.
+The 2024–2025 application is `workflows/run_2425.slurm`.
 
-## Pipeline outline
+## Final parameter provenance
 
-1. `pipeline/horizontal_interp.py`, `pipeline/vars_computation.py` - interpolate ERA5 fields to farm sites, vertical extrapolation and air-density correction.
-2. `pipeline/power_curve.py`, `pipeline/farm_power_curves.py` - build and smooth turbine-model power curves.
-3. `pipeline/aggr_farm.py`, `pipeline/aggr_farm_aux.py`, `pipeline/capacity.py` - convert wind speed to generation, apply technical lifetime and capacity factors.
-4. `pipeline/find_optimal_kb.py`, `pipeline/find_optimal_kb_full_data.py`, `pipeline/kb_batch_aggr.py`, `pipeline/kb_validation.py` - estimate wind-speed calibration parameters (k, b) and the response-surface path.
-5. `pipeline/final_gen.py`, `pipeline/no_kb_gen.py` - produce calibrated hourly generation.
-6. `drivers/build_final_city.py`, `drivers/apply_2b_city.py` - assemble city-level final files and apply the generation calibration.
-7. `drivers/refit_and_cv.py`, `drivers/refit_constrained.py` - refit generation calibration with the non-negative intercept constraint and run the resampling/cross-validation experiments.
+| File | Meaning |
+|---|---|
+| `parameters/optimal_kb_M4.csv` | final M4 `(k,b)`; matches the HPC M4 selection table exactly |
+| `parameters/gen_correction_M4prod_final.csv` | production `(K,B)` used for 2013–2023 |
+| `parameters/pre2012_official.csv` | national annual totals used for 2005–2012 |
 
-Each module exposes command-line help (`python pipeline/<module>.py --help`).
-
-## Calibration parameters
-
-`parameters/optimal_kb_M4.csv` contains the province-season wind-speed parameters (k, b) and `parameters/gen_correction_M4prod_final.csv` the generation calibration parameters (K*, B*) for the 30 calibration units. `parameters/pre2012_official.csv` contains the national annual totals used for the 2005-2012 scaling.
+See [`docs/provenance.md`](docs/provenance.md) for the HPC paths,
+final-production log, SHA256 checksums and the distinction between the
+production `(K,B)` table and the separate CV output.
 
 ## Validation
 
-The manuscript reports in-sample (2013-2023), out-of-sample (2024-2025), and resampling validation. The scripts used for the resampling experiment and the parameter refits are in `drivers/`.
+- The M4 selector reproduces all 120 final `(k,b)` values from the
+  wind-valley paths (max difference 0.0 for `k`, `b`, `w_smape`).
+- A full 2013–2025 CV split on the HPC enumeration data completed with
+  30 provinces and 120 province-season selections.
+- `python -m pytest -q tests` covers the wind-only selection,
+  non-negative intercept, 143-period grid and production fit.
 
-## License
+## Data and code availability
 
-Code: MIT License (see `LICENSE`). The reconstructed dataset is released separately under CC BY 4.0.
+The reconstructed dataset is archived separately; this repository does
+not redistribute ERA5, CDMet, the wind-farm inventory or official
+statistics.  Input paths are configured through `WINDPAPER_*`
+environment variables (`config.example.env`).
 
-## Citation
+## License and citation
 
-If you use this code, please cite the manuscript (see `CITATION.cff`). The archived dataset DOI will be added here once available.
-
-## Contact
-
-Issues and questions: please open a GitHub issue.
+Code: MIT (`LICENSE`).  Dataset: CC BY 4.0.  Citation metadata:
+`CITATION.cff`.

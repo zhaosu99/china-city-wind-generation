@@ -10,6 +10,10 @@ venv/
 data/
 results/
 results_v2/
+results_2425/
+calibration_out/
+cv_m4_work/
+cv_m4_out/
 *.nc
 *.nc4
 *.tar
@@ -17,6 +21,7 @@ results_v2/
 *.tgz
 *.zip
 *.log
+.pytest_cache/
 
 # OS / editor
 .DS_Store
