@@ -68,21 +68,23 @@ The released city dataset was then produced by
 
 ## 3. Parameter checksums
 
-| File | SHA256 (prefix) | Note |
+| File | SHA256 (LF-normalized prefix) | Note |
 |---|---|---|
-| `parameters/optimal_kb_M4.csv` | `d4778452f54582ee` | 120 rows; exact `k`, `b`, `w_smape` match HPC `M4/selection.csv` (max abs diff 0.0) |
-| `parameters/gen_correction_M4prod_final.csv` | `8cbdd8b3111edfe0` | released production `(K,B)`; byte-identical to the post-Feb-fix HPC file |
-| HPC `m4prod/gen_correction_M4prod.csv` | `03f716ece73140e0` | **pre-Feb-fix** file; differs in the constrained rows (Jiangxi/Henan negative intercepts) |
+| `parameters/optimal_kb_M4.csv` | `5ece24c6b98680db` | 120 rows; exact `k`, `b`, `w_smape` match HPC `M4/selection.csv` (max abs diff 0.0) |
+| `parameters/gen_correction_M4prod_final.csv` | `38988788db5cb660` | released production `(K,B)`; numeric content identical to the post-Feb-fix HPC file |
+| HPC pre-Feb copy (`...gen_correction_M4prod.csv.beforeFebFix`) | `03f716ece73140e0` | pre-Feb-fix; differs in the constrained rows (Jiangxi/Henan negative intercepts) |
 | HPC `M4/gen_correction.csv` | `75295276dd5de7c7` | production-style unconstrained fit from the M2/M4 comparison run; **not** the released file and not a CV-fold output |
 
-The released production file is the post-Feb-fix
-`m4prod/data/03_params_and_validation/gen_correction_M4prod.csv`
-(`8cbdd8b3...`).  The older `m4prod/gen_correction_M4prod.csv` and the
-CV output should not be substituted for it.  The Feb-alignment fix
-updated the official province-month alignment; running
-`drivers/fit_generation_calibration.py` on the older pre-Feb inputs
-reproduces the pre-Feb `3128...` table, not the released `8CBD...`
-table, so the documented input version is part of the provenance.
+The checksums are computed on LF-normalized bytes; Windows checkouts
+with CRLF have different raw-byte hashes.  The released production file
+is the post-Feb-fix
+`m4prod/data/03_params_and_validation/gen_correction_M4prod.csv`.
+The older pre-Feb file and the CV output should not be substituted for
+it.  The Feb-alignment fix updated the official province-month
+alignment; running `drivers/fit_generation_calibration.py` on the older
+pre-Feb inputs reproduces the pre-Feb `3128...` table, not the released
+`8CBD...` table, so the documented input version is part of the
+provenance.
 
 ## 4. Code map
 

@@ -70,7 +70,8 @@ python drivers/build_final_city.py \
 
 `build_final_city.py` reads
 `parameters/gen_correction_M4prod_final.csv` and
-`parameters/pre2012_official.csv`.
+`parameters/pre2012_official.csv`.  On Slurm, the same stage is
+`workflows/run_finalize.slurm`.
 
 The steps 1–3 outputs (`farm_raw_w`, `farm_power_curves` and the
 inventory/ERA5/CDMet inputs) must exist before `run_full.slurm` is

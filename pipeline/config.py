@@ -2,18 +2,17 @@
 
 本地与集群的差异全部通过环境变量覆盖，不改代码：
 
-    WINDPAPER_ROOT        项目根目录      （默认：集群 /geogfs1/groups/geog_liulb/hongyu）
+    WINDPAPER_ROOT        项目根目录      （默认：仓库根目录）
     WINDPAPER_DATA        输入数据根目录  （默认 <ROOT>/data）
-    WINDPAPER_RESULTS     结果根目录      （默认 <ROOT>/results_v2）
+    WINDPAPER_RESULTS     结果根目录      （默认 <ROOT>/results）
     WINDPAPER_CURVE_DIR   功率曲线目录    （默认 <DATA>/farm_power_curves）
     WINDPAPER_ERA5_DIR    ERA5 数据目录   （默认 <DATA>/ERA5_China；本地可指向 D:\\Data\\ERA5）
     WINDPAPER_CDMET_DIR   CDMet 数据目录  （默认 <DATA>/CDMet；**允许缺省**）
 
 六个变量**互相独立**，因此可以做到"输入只读、新产物另写"。
 
-⚠️ `results_root()` 默认值由 `<ROOT>/results` 改为 `<ROOT>/results_v2`
-   理由：集群旧目录已改名为 `results_old_20260929`；若默认仍写 `<ROOT>/results`，
-   忘记设环境变量时会**悄悄新建一个 results/ 目录**，与 `results_v2` 错位、且看起来"成功了"。
+`results_root()` 返回 `<ROOT>/results`；如需旧集群布局，显式设置
+`WINDPAPER_RESULTS`。
 
 本地重跑布局（见 _run\\ENVIRONMENT.md 与 CalculationCode\\RUN_FULL_CHAIN.md）
 --------------------------------------------------------------------------

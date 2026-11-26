@@ -1,0 +1,7 @@
+# Keep text files normalized in the repository; Windows checkouts may still
+# show CRLF locally, so checksum tests normalize line endings.
+*.py text eol=lf
+*.md text eol=lf
+*.csv text eol=lf
+*.sh text eol=lf
+*.slurm text eol=lf

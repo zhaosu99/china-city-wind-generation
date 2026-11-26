@@ -964,7 +964,7 @@ def run_panel_pipeline(
 
 
 def resolve_cli_step_kwargs(args: argparse.Namespace) -> dict[str, bool]:
-    """把命令行解析成 12 个步骤开关（唯一实现，便于单测）。
+    """把命令行解析成 11 个步骤开关（唯一实现，便于单测）。
 
     优先级（后者覆盖前者）：
         默认表 --full-chain（全开） < --steps（子集） < --skip-steps（关闭） < --step-x（显式单参）
