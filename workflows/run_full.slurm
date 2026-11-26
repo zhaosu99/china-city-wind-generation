@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Final production run (1989-2023), corresponding to HPC run_full.slurm.
-# The M4 (k,b) table must already exist at
+# Wind-calibrated generation for 1989-2023 (intermediate stage).
+# This runs only panel.py --steps 9.  The final city dataset is produced
+# afterwards by drivers/build_final_city.py (see workflows/README.md).
+# The M4 (k,b) table must already exist at:
 #   $WINDPAPER_RESULTS/optimal_kb/optimal_kb.csv
-# and the model/generation inputs must be configured through WINDPAPER_*.
+# Steps 1-3 (farm_raw_w, farm_power_curves) must already exist.
 #
 #SBATCH --job-name=m4prod
 #SBATCH --nodes=1
@@ -24,6 +26,8 @@ INNER_WORKERS="${INNER_WORKERS:-8}"
 export WINDPAPER_ROOT="$ROOT"
 export WINDPAPER_RESULTS="${WINDPAPER_RESULTS:-$ROOT/results}"
 export WINDPAPER_MAX_PARALLEL="$MAX_WORKERS"
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 
 cd "$ROOT/pipeline"
 echo "JOB START $(date -Is) host=$(hostname)"
@@ -33,7 +37,7 @@ set +e
   --max-workers "$MAX_WORKERS" \
   --outer-max-workers "$OUTER_WORKERS" \
   --inner-max-workers "$INNER_WORKERS" \
-  --no-strict
+  --strict
 rc=$?
 set -e
 echo "JOB END $(date -Is) rc=$rc"

@@ -21,6 +21,11 @@ cv_m4_out/
 *.tgz
 *.zip
 *.log
+m4prod_*.out
+m4prod_*.err
+m4final_*.out
+m4final_*.err
+output/
 .pytest_cache/
 
 # OS / editor

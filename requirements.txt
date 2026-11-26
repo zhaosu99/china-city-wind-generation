@@ -20,3 +20,4 @@ plotly
 chardet
 python-dateutil
 dask
+pytest>=7

@@ -57,8 +57,8 @@ import os
 import warnings
 from pathlib import Path
 
-# 集群默认值（原 panel.py 中的硬编码值，保留为默认，便于集群端零配置运行）
-DEFAULT_PROJECT_ROOT = Path("/geogfs1/groups/geog_liulb/hongyu")
+# Default to the repository root; cluster users should set WINDPAPER_ROOT.
+DEFAULT_PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _env_path(name: str) -> Path | None:
@@ -84,9 +84,9 @@ def data_root() -> Path:
 def results_root() -> Path:
     """结果根目录（各步骤的输入/输出都在其子目录下）。
 
-    默认 `<ROOT>/results_v2`；集群旧 `results/` 已改名 `results_old_20260929`，见模块 docstring。
+    默认 `<ROOT>/results`。
     """
-    return _env_path("WINDPAPER_RESULTS") or (project_root() / "results_v2")
+    return _env_path("WINDPAPER_RESULTS") or (project_root() / "results")
 
 
 def curve_dir() -> Path:

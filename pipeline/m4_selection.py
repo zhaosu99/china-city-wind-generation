@@ -38,7 +38,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from find_optimal_kb import (
+from wind_valley import (
     MIN_OPTIMAL_K,
     get_optimal_path_from_dataframe,
     interpolate_smape_value,
@@ -63,9 +63,8 @@ def select_m4_from_path(
     """Select the minimum wind error along the wind-valley path.
 
     Parameters are plain arrays, which makes the core selection testable
-    without any generation data.  The selected point is the global
-    minimum of the wind surface inside the calibration box when the path
-    covers the full box (the M4 definition in the manuscript).
+    without any generation data.  The selected point is the minimum
+    wind-SMAPE point on the wind-valley path inside the calibration box.
     """
     k_path = np.asarray(k_path, dtype=float).ravel()
     b_path = np.asarray(b_path, dtype=float).ravel()
@@ -83,9 +82,10 @@ def select_m4_from_path(
     )
     if not np.any(in_box):
         raise ValueError("no path point inside the calibration box")
-    values = np.where(in_box, wind_smape, np.inf)
-    if not np.isfinite(values).any():
-        raise ValueError("all wind-SMAPE values on the path are non-finite")
+    valid = in_box & np.isfinite(wind_smape)
+    if not valid.any():
+        raise ValueError("no finite wind-SMAPE value inside the calibration box")
+    values = np.where(valid, wind_smape, np.inf)
 
     idx = int(np.argmin(values))
     k = float(k_path[idx])
@@ -261,17 +261,16 @@ def find_optimal_kb_m4(
         .reset_index(drop=True)
     )
     if output_csv.exists() and not overwrite:
-        existing = pd.read_csv(output_csv, encoding="utf-8-sig")
-        if len(existing) != len(df):
-            raise FileExistsError(
-                f"{output_csv} exists with {len(existing)} rows; use --overwrite to replace"
-            )
+        raise FileExistsError(
+            f"{output_csv} already exists; pass overwrite=True to replace it"
+        )
     output_csv.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_csv, index=False, encoding="utf-8-sig")
     return {
         "output_csv": str(output_csv),
         "n_rows": int(len(df)),
         "n_failures": len(failures),
+        "failure_count": len(failures),  # panel.py failure-gate key
         "n_skipped": len(skipped),
         "selection_mode": "M4_wind_only",
     }

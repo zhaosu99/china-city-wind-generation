@@ -115,7 +115,7 @@ def main() -> None:
                         help="CSV with prov, ym, gen_MWh")
     parser.add_argument("--official-monthly", type=Path, required=True,
                         help="CSV with cn, year, month, value_MWh")
-    parser.add_argument("--out", type=Path, default=Path("parameters/gen_correction_M4prod_final.csv"))
+    parser.add_argument("--out", type=Path, default=Path("calibration_out/gen_correction.csv"))
     parser.add_argument("--start-year", type=int, default=2013)
     parser.add_argument("--end-year", type=int, default=2023)
     args = parser.parse_args()

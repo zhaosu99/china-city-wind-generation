@@ -19,9 +19,11 @@ For each province and season, a smooth wind-speed SMAPE surface
 one-dimensional valley `b*(k) = argmin_b W(k,b)` is followed and the
 point with the minimum **wind-speed** SMAPE is selected.
 
-**Generation data are not used to select `(k,b)`.**  The earlier M2
-selection, which used the generation-error surface to define the
-candidate path, is retained only under `legacy/` for transparency.
+**Generation data are not used to select `(k,b)`.**  The old M2
+generation-surface selector is archived under `legacy/`; the final
+calibration path does not import it.  One deprecated illustrative figure
+(`figures/fig04_optimal_kb_example/`) still contains a local copy of the
+M2 helper; it is not part of the calibration pipeline.
 
 Implementation:
 
@@ -66,7 +68,8 @@ pipeline/       core reconstruction modules and the M4 selector
 drivers/        CV, production generation fit and city-level drivers
 workflows/      calibration shell/Slurm entry points and production jobs
 parameters/     final M4 parameter tables
-figures/        figure-rendering scripts
+figures/        figure-rendering scripts (some require a local
+                figures/_lib/config_paths.py; not part of calibration)
 tests/          unit tests for the M4 selector, CV grid and fit
 legacy/         old M2 scripts, kept only for audit; not on the final path
 docs/           provenance and code map
@@ -84,20 +87,28 @@ bash workflows/run_calibration.sh
 
 The important checks are:
 
-1. `pipeline/m4_selection.py` reads only the wind-error surface and the
-   wind-valley path; generation CSVs are used only to enumerate
-   province/season pairs.
-2. `drivers/cv_m4.py` uses 2013–2025 and 50 seasonal splits.
+1. `pipeline/m4_selection.py` reads only the wind-error surface and
+   derives the valley from it; generation CSVs are used only to
+   enumerate province/season pairs.
+2. `drivers/cv_m4.py` uses 2013–2025 and 50 seasonally stratified
+   splits (29 test periods each).
 3. `drivers/fit_generation_calibration.py` uses the production
    2013–2023 fit and enforces `B >= 0`.
 
 ## Production
 
-The final production stage is `pipeline/panel.py --steps 9`, using the
-precomputed `optimal_kb.csv`:
+The final production has two stages.  First, `pipeline/panel.py --steps 9`
+applies the M4 wind calibration and writes `calibrated_gen`:
 
 ```bash
 sbatch workflows/run_full.slurm
+```
+
+Second, `drivers/build_final_city.py` applies the generation-level
+calibration to produce `city_final`:
+
+```bash
+python drivers/build_final_city.py
 ```
 
 The 2024–2025 application is `workflows/run_2425.slurm`.
@@ -107,12 +118,12 @@ The 2024–2025 application is `workflows/run_2425.slurm`.
 | File | Meaning |
 |---|---|
 | `parameters/optimal_kb_M4.csv` | final M4 `(k,b)`; matches the HPC M4 selection table exactly |
-| `parameters/gen_correction_M4prod_final.csv` | production `(K,B)` used for 2013–2023 |
+| `parameters/gen_correction_M4prod_final.csv` | released production `(K,B)` for 2013–2023 (post-Feb-fix file) |
 | `parameters/pre2012_official.csv` | national annual totals used for 2005–2012 |
 
 See [`docs/provenance.md`](docs/provenance.md) for the HPC paths,
 final-production log, SHA256 checksums and the distinction between the
-production `(K,B)` table and the separate CV output.
+released production `(K,B)` table and the separate CV output.
 
 ## Validation
 

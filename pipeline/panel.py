@@ -282,11 +282,11 @@ def _parse_step_list(value: str | None) -> set[int] | None:
             step = int(item)
         except ValueError as exc:
             raise argparse.ArgumentTypeError(
-                f"步骤编号必须是 1-12 的整数，收到: {item}"
+                f"步骤编号必须是 1-11 的整数，收到: {item}"
             ) from exc
         if step not in STEP_ARG_NAME_MAP:
             raise argparse.ArgumentTypeError(
-                f"步骤编号超出范围，收到: {step}，允许值为 1-12"
+                f"步骤编号超出范围，收到: {step}，允许值为 1-11"
             )
         steps.add(step)
 
@@ -364,7 +364,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--full-chain",
         action="store_true",
-        help="跑完整 step 1→12（含 step2/4/5 与 step12），不依赖任何『就地复用』的旧产物。"
+        help="跑完整 step 1→11，不依赖任何『就地复用』的旧产物。"
              "与 --skip-steps 同时给出时，--skip-steps 仍然生效。开启后默认 strict_failures。",
     )
     parser.add_argument(
@@ -398,7 +398,7 @@ def build_parser() -> argparse.ArgumentParser:
 # 并行预算护栏（用户硬约束：HPC 并行总数必须 ≤ 96，超了会被惩罚）
 # ---------------------------------------------------------------------------
 # 逐 step 的并行结构（**已逐行核实**，见 RUN_FULL_CHAIN.md 的并发表）：
-#   单层 max_workers      : step2, 4, 5, 6, 7, 8, 11, 12
+#   单层 max_workers      : step2, 4, 5, 6, 7, 8, 11
 #   两层 outer × inner   : step3 (kb_batch_aggr), step9 (farm_aggr_with_kb)
 #   无并行（串行）        : step1 (generate_farm_power_curves_csvs), step10 (final_gen)
 # 两层步骤的**有效并发 = outer × inner**（相乘，不是相加）⇒ 必须单独校验乘积。
@@ -438,7 +438,7 @@ def effective_concurrency(step: int, max_workers: int, outer_max_workers: int,
 # 失败门禁（failure_count > 0 必须让全链**显式失败**，否则重跑会静默缺件）
 # ---------------------------------------------------------------------------
 # 实证：冒烟 step3 出现 total=1230 success=1167 **failure=63**（进程池被终止），
-# 但 panel 仍打印 "Step 3/12 completed" ⇒ 后续步骤建立在缺 5.1% 网格的数据上。
+# 但 panel 仍打印 "Step 3/11 completed" ⇒ 后续步骤建立在缺 5.1% 网格的数据上。
 def extract_step_failures(result: Any) -> dict[str, Any]:
     """从步骤返回值里抽取 total / success / failure_count / 失败样例。
 
@@ -650,7 +650,7 @@ def validate_worker_budget(
 
     problems = []
     if int(max_workers) > limit:
-        problems.append("单层 max_workers=%d > 上限 %d（step2/4/5/6/7/8/11/12 用）"
+        problems.append("单层 max_workers=%d > 上限 %d（step2/4/5/6/7/8/11 用）"
                         % (max_workers, limit))
     product = int(outer_max_workers) * int(inner_max_workers)
     if product > limit:

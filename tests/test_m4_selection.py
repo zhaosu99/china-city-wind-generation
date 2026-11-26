@@ -33,6 +33,14 @@ def test_m4_rejects_length_mismatch():
         m4_selection.select_m4_from_path([1.0], [1.0, 2.0], [1.0])
 
 
+def test_m4_ignores_non_finite_points():
+    out = m4_selection.select_m4_from_path(
+        np.array([0.5, 0.6]), np.array([0.0, 0.0]), np.array([np.nan, 5.0])
+    )
+    assert out["k"] == pytest.approx(0.6)
+    assert out["w_smape"] == pytest.approx(5.0)
+
+
 def test_m4_ignores_generation_values():
     """The M4 selector must be unaffected by any generation array."""
     k = np.array([0.5, 0.9, 1.2])

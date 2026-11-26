@@ -567,42 +567,43 @@ def process_all_cities_for_technology(original_csv_path: str, tech_name: str, co
 # Example Usage:
 # ========================
 
-# Define paths
-correction_csv = r"D:\Data\自统装机数据\助研项目 - 风电装机统计_corrected.csv"
+if __name__ == "__main__":
+    # Define paths
+    correction_csv = r"D:\Data\自统装机数据\助研项目 - 风电装机统计_corrected.csv"
 
-# Process陆上风电
-onshore_output = r"D:\HKU PhD\wind data paper\陆上风电月度装机量.csv"
-onshore_input = r"D:\HKU PhD\wind data paper\陆上风电场装机数据.csv"
+    # Process陆上风电
+    onshore_output = r"D:\HKU PhD\wind data paper\陆上风电月度装机量.csv"
+    onshore_input = r"D:\HKU PhD\wind data paper\陆上风电场装机数据.csv"
 
-print("Processing onshore wind data...")
-onshore_result = process_all_cities_for_technology(
-    original_csv_path=onshore_input,
-    tech_name="陆上风电",
-    correction_csv=correction_csv,
-    output_file=onshore_output,
-    method='platform_truncation'  # You can change to 'scale_factor' if needed
-)
+    print("Processing onshore wind data...")
+    onshore_result = process_all_cities_for_technology(
+        original_csv_path=onshore_input,
+        tech_name="陆上风电",
+        correction_csv=correction_csv,
+        output_file=onshore_output,
+        method='platform_truncation'  # You can change to 'scale_factor' if needed
+    )
 
-# Process海上风电
-offshore_output = r"D:\HKU PhD\wind data paper\海上风电月度装机量.csv"
-offshore_input = r"D:\HKU PhD\wind data paper\海上风电场装机数据.csv"
+    # Process海上风电
+    offshore_output = r"D:\HKU PhD\wind data paper\海上风电月度装机量.csv"
+    offshore_input = r"D:\HKU PhD\wind data paper\海上风电场装机数据.csv"
 
-print("Processing offshore wind data...")
-offshore_result = process_all_cities_for_technology(
-    original_csv_path=offshore_input,
-    tech_name="海上风电",
-    correction_csv=correction_csv,
-    output_file=offshore_output,
-    method='platform_truncation'  # You can change to 'scale_factor' if needed
-)
+    print("Processing offshore wind data...")
+    offshore_result = process_all_cities_for_technology(
+        original_csv_path=offshore_input,
+        tech_name="海上风电",
+        correction_csv=correction_csv,
+        output_file=offshore_output,
+        method='platform_truncation'  # You can change to 'scale_factor' if needed
+    )
 
-# If you want to combine both onshore and offshore results into one file
-if onshore_result is not None and offshore_result is not None:
-    combined_output = r"D:\HKU PhD\wind data paper\风电市级月度装机量-2023.csv"
-    combined_result = pd.concat([onshore_result, offshore_result], ignore_index=True)
+    # If you want to combine both onshore and offshore results into one file
+    if onshore_result is not None and offshore_result is not None:
+        combined_output = r"D:\HKU PhD\wind data paper\风电市级月度装机量-2023.csv"
+        combined_result = pd.concat([onshore_result, offshore_result], ignore_index=True)
     
-    # Round the cumulative capacity to 2 decimal places in combined result
-    combined_result['累积装机(MW)'] = combined_result['累积装机(MW)'].round(2)
+        # Round the cumulative capacity to 2 decimal places in combined result
+        combined_result['累积装机(MW)'] = combined_result['累积装机(MW)'].round(2)
     
-    combined_result.to_csv(combined_output, index=False, encoding='utf-8')
-    print(f"Successfully saved combined results to {combined_output}")
+        combined_result.to_csv(combined_output, index=False, encoding='utf-8')
+        print(f"Successfully saved combined results to {combined_output}")

@@ -61,9 +61,9 @@ def pick_m4_from_npz(path_file: Path) -> dict:
     box = np.array([in_box(k, b) for k, b in zip(k_path, b_path)], dtype=bool)
     if not box.any():
         raise ValueError(f"no path point inside the box in {path_file}")
-    values = np.where(box, wind, np.inf)
+    values = np.where(box & np.isfinite(wind), wind, np.inf)
     if not np.isfinite(values).any():
-        raise ValueError(f"all wind values are non-finite in {path_file}")
+        raise ValueError(f"no finite wind value inside the box in {path_file}")
     idx = int(np.argmin(values))
     k = float(k_path[idx])
     b = float(b_path[idx])
