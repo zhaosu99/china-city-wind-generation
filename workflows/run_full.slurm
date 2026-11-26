@@ -27,6 +27,7 @@ export WINDPAPER_MAX_PARALLEL="$MAX_WORKERS"
 
 cd "$ROOT/pipeline"
 echo "JOB START $(date -Is) host=$(hostname)"
+set +e
 "$PY" -u panel.py \
   --steps 9 \
   --max-workers "$MAX_WORKERS" \
@@ -34,5 +35,6 @@ echo "JOB START $(date -Is) host=$(hostname)"
   --inner-max-workers "$INNER_WORKERS" \
   --no-strict
 rc=$?
+set -e
 echo "JOB END $(date -Is) rc=$rc"
 exit "$rc"
